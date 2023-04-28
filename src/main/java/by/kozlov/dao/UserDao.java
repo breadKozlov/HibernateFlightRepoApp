@@ -4,9 +4,10 @@ import by.kozlov.entity.Birthday;
 import by.kozlov.entity.Gender;
 import by.kozlov.entity.Role;
 import by.kozlov.entity.User;
-import by.kozlov.utils.ConnectionManager;
+import by.kozlov.utils.HibernateSessionManager;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
+import org.hibernate.query.Query;
 
 import java.sql.Date;
 import java.sql.ResultSet;
@@ -18,63 +19,33 @@ import static lombok.AccessLevel.PRIVATE;
 
 @NoArgsConstructor(access = PRIVATE)
 public class UserDao implements Dao<Integer, User> {
-
     private static final UserDao INSTANCE = new UserDao();
-
-    private static final String SAVE_SQL =
-            "INSERT INTO users (name_user, birthday, email, password, role, gender) VALUES (?, ?, ?, ?, ?, ?)";
-
     private static final String GET_BY_EMAIL_AND_PASSWORD_SQL =
-            "SELECT * FROM users WHERE email = ? AND password = ?";
-
+            "FROM User U WHERE U.email = :email AND U.password = :password";
 
     @SneakyThrows
     public Optional<User> findByEmailAndPassword(String email, String password) {
-        try (var connection = ConnectionManager.get();
-             var preparedStatement = connection.prepareStatement(GET_BY_EMAIL_AND_PASSWORD_SQL)) {
-            preparedStatement.setString(1, email);
-            preparedStatement.setString(2, password);
 
-            var resultSet = preparedStatement.executeQuery();
-            User user = null;
-            if (resultSet.next()) {
-                user = buildEntity(resultSet);
-            }
-            return Optional.ofNullable(user);
+        Optional<User> user = null;
+        try(var session = HibernateSessionManager.get()) {
+            session.beginTransaction();
+            Query query = session.createQuery(GET_BY_EMAIL_AND_PASSWORD_SQL);
+            query.setParameter("email",email);
+            query.setParameter("password",password);
+            user = (Optional<User>) query.list().stream().findFirst();
+            return user;
         }
-    }
 
-
-    private User buildEntity(ResultSet resultSet) throws java.sql.SQLException {
-        return User.builder()
-                .id(resultSet.getObject("id", Integer.class))
-                .nameUser(resultSet.getObject("name_user", String.class))
-                .birthday(new Birthday(resultSet.getObject("birthday", Date.class).toLocalDate()))
-                .email(resultSet.getObject("email", String.class))
-                .password(resultSet.getObject("password", String.class))
-                .role(Role.find(resultSet.getObject("role", String.class)).orElse(null))
-                .gender(Gender.valueOf(resultSet.getObject("gender", String.class)))
-                .build();
     }
 
     @Override
     @SneakyThrows
     public User save(User entity) {
-        try (var connection = ConnectionManager.get();
-             var preparedStatement = connection.prepareStatement(SAVE_SQL, RETURN_GENERATED_KEYS)) {
-            preparedStatement.setObject(1, entity.getNameUser());
-            preparedStatement.setObject(2, entity.getBirthday());
-            preparedStatement.setObject(3, entity.getEmail());
-            preparedStatement.setObject(4, entity.getPassword());
-            preparedStatement.setObject(5, entity.getRole().name());
-            preparedStatement.setObject(6, entity.getGender().name());
 
-            preparedStatement.executeUpdate();
-
-            var generatedKeys = preparedStatement.getGeneratedKeys();
-            generatedKeys.next();
-            entity.setId(generatedKeys.getObject("id", Integer.class));
-
+        try (var session = HibernateSessionManager.get()) {
+            session.beginTransaction();
+            session.save(entity);
+            session.getTransaction().commit();
             return entity;
         }
     }

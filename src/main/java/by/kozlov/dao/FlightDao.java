@@ -1,15 +1,9 @@
 package by.kozlov.dao;
 
 import by.kozlov.entity.Flight;
-import by.kozlov.entity.FlightStatus;
-import by.kozlov.exception.DaoException;
-import by.kozlov.utils.ConnectionManager;
 import by.kozlov.utils.HibernateSessionManager;
 import org.hibernate.Session;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
