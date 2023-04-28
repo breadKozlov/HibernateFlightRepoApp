@@ -11,11 +11,13 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 
 import static by.kozlov.utils.UrlPath.REGISTRATION;
 
+@Slf4j
 @WebServlet(REGISTRATION)
 public class RegistrationServlet extends HttpServlet {
     private final UserService userService = UserService.getInstance();
@@ -24,6 +26,7 @@ public class RegistrationServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setAttribute("roles", Role.values());
         req.setAttribute("genders", Gender.values());
+        log.info("User wants to register");
         req.getRequestDispatcher(JspHelper.getPath("registration"))
                 .forward(req, resp);
     }
@@ -43,6 +46,7 @@ public class RegistrationServlet extends HttpServlet {
             resp.sendRedirect("./login");
         } catch (ValidationException exception) {
             req.setAttribute("errors", exception.getErrors());
+            log.error("Registration error: " + exception.getErrors());
             doGet(req, resp);
         }
 

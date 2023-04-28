@@ -1,17 +1,10 @@
-import by.kozlov.dao.FlightDao;
+
 import by.kozlov.dao.TicketDao;
-import by.kozlov.entity.*;
-import by.kozlov.utils.HibernateSessionManager;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
+import lombok.extern.slf4j.Slf4j;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
 
+@Slf4j
 public class HibernateRunner {
-
     public static void main(String[] args) {
 
 //        configuration.addAnnotatedClass(User.class);
@@ -19,9 +12,10 @@ public class HibernateRunner {
 //        configuration.addAttributeConverter(new BirthdayConvertor(), true);
         //var flightDao = FlightDao.getInstance();
         //System.out.println(flightDao.findById(1L));
-        var ticketDao = TicketDao.getInstance();
-        ticketDao.delete(59L);
 
+        var ticketDao = TicketDao.getInstance();
+
+        log.info("Find All tickets");
         System.out.println(ticketDao.findAll());
     }
 }

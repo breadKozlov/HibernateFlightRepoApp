@@ -9,11 +9,13 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 
 import static by.kozlov.utils.UrlPath.LOGIN;
 
+@Slf4j
 @WebServlet(LOGIN)
 public class LoginServlet extends HttpServlet {
 
@@ -36,12 +38,15 @@ public class LoginServlet extends HttpServlet {
 
     @SneakyThrows
     private void onLoginFail(HttpServletRequest req, HttpServletResponse resp) {
+        log.error("This user not found");
         resp.sendRedirect("./login?error&email=" + req.getParameter("email"));
     }
 
     @SneakyThrows
     private void onLoginSuccess(UserDto user, HttpServletRequest req, HttpServletResponse resp) {
+        log.debug("The user: " + user.getName() + " fined in database and saved in session" );
         req.getSession().setAttribute("user", user);
+
         resp.sendRedirect("./flights");
     }
 }
