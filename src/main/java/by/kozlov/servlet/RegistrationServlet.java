@@ -40,7 +40,7 @@ public class RegistrationServlet extends HttpServlet {
                 .build();
         try {
             userService.create(userDto);
-            resp.sendRedirect("/login");
+            resp.sendRedirect("./login");
         } catch (ValidationException exception) {
             req.setAttribute("errors", exception.getErrors());
             doGet(req, resp);

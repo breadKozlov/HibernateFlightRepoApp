@@ -25,7 +25,7 @@ public class User {
     private String nameUser;
 
     @Convert(converter = BirthdayConvertor.class)
-    @Column(name = "birthdaty")
+    @Column(name = "birthday")
     private Birthday birthday;
     private String email;
     private String password;

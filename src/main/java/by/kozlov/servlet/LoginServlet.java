@@ -36,12 +36,12 @@ public class LoginServlet extends HttpServlet {
 
     @SneakyThrows
     private void onLoginFail(HttpServletRequest req, HttpServletResponse resp) {
-        resp.sendRedirect("/login?error&email=" + req.getParameter("email"));
+        resp.sendRedirect("./login?error&email=" + req.getParameter("email"));
     }
 
     @SneakyThrows
     private void onLoginSuccess(UserDto user, HttpServletRequest req, HttpServletResponse resp) {
         req.getSession().setAttribute("user", user);
-        resp.sendRedirect("/flights");
+        resp.sendRedirect("./flights");
     }
 }

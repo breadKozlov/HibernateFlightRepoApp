@@ -22,7 +22,7 @@ public class UserDao implements Dao<Integer, User> {
     private static final UserDao INSTANCE = new UserDao();
 
     private static final String SAVE_SQL =
-            "INSERT INTO users (name, birthday, email, password, role, gender) VALUES (?, ?, ?, ?, ?, ?)";
+            "INSERT INTO users (name_user, birthday, email, password, role, gender) VALUES (?, ?, ?, ?, ?, ?)";
 
     private static final String GET_BY_EMAIL_AND_PASSWORD_SQL =
             "SELECT * FROM users WHERE email = ? AND password = ?";
@@ -48,7 +48,7 @@ public class UserDao implements Dao<Integer, User> {
     private User buildEntity(ResultSet resultSet) throws java.sql.SQLException {
         return User.builder()
                 .id(resultSet.getObject("id", Integer.class))
-                .nameUser(resultSet.getObject("name", String.class))
+                .nameUser(resultSet.getObject("name_user", String.class))
                 .birthday(new Birthday(resultSet.getObject("birthday", Date.class).toLocalDate()))
                 .email(resultSet.getObject("email", String.class))
                 .password(resultSet.getObject("password", String.class))

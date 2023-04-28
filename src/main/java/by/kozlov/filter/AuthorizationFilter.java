@@ -11,7 +11,7 @@ import java.util.Set;
 import static by.kozlov.utils.UrlPath.LOGIN;
 import static by.kozlov.utils.UrlPath.REGISTRATION;
 
-@WebFilter("/*")
+@WebFilter("/filter")
 public class AuthorizationFilter implements Filter {
 
     private static final Set<String> PUBLIC_PATH = Set.of(LOGIN, REGISTRATION);
