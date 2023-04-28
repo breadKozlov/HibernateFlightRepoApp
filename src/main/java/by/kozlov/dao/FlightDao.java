@@ -4,6 +4,8 @@ import by.kozlov.entity.Flight;
 import by.kozlov.entity.FlightStatus;
 import by.kozlov.exception.DaoException;
 import by.kozlov.utils.ConnectionManager;
+import by.kozlov.utils.HibernateSessionManager;
+import org.hibernate.Session;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -14,62 +16,24 @@ import java.util.Optional;
 
 public class FlightDao implements Dao<Long, Flight>{
     private static final FlightDao INSTANCE = new FlightDao();
-
-    private static String FIND_BY_ID_SQL = """
-            SELECT id, flight_no, departure_date, departure_airport_code, arrival_date, arrival_airport_code, aircraft_id, status
-            FROM flight
-            WHERE id = ?
-            """;
-    private static String FIND_ALL_SQL = """
-        SELECT id, flight_no, departure_date, departure_airport_code, arrival_date, arrival_airport_code, aircraft_id, status
-        FROM flight;
-          """;
+    private static String FIND_ALL_HIB = "from Flight";
 
     @Override
     public boolean update(Flight flight) {
         return false;
     }
 
-
-    public Optional<Flight> findById(Long id, Connection connection) {
-        try (var statement = connection.prepareStatement(FIND_BY_ID_SQL)) {
-            Flight flight = null;
-            statement.setLong(1, id);
-            var result = statement.executeQuery();
-            if (result.next())
-                flight = buildFlight(result);
-            return Optional.ofNullable(flight);
-        } catch (SQLException e) {
-            throw new DaoException(e);
-        }
-    }
-
-    private Flight buildFlight(ResultSet result) throws SQLException {
-        return new Flight(
-                result.getLong("id"),
-                result.getString("flight_no"),
-                result.getTimestamp("departure_date").toLocalDateTime(),
-                result.getString("departure_airport_code"),
-                result.getTimestamp("arrival_date").toLocalDateTime(),
-                result.getString("arrival_airport_code"),
-                result.getInt("aircraft_id"),
-                FlightStatus.valueOf(result.getString("status"))
-        );
-    }
-
     @Override
     public List<Flight> findAll() {
-        try (var connection = ConnectionManager.get();
-             var statement = connection.prepareStatement(FIND_ALL_SQL)) {
-            List<Flight> flights = new ArrayList<>();
-            var result = statement.executeQuery();
-            while (result.next())
-                flights.add(buildFlight(result));
 
-            return flights;
-        } catch (SQLException e) {
-            throw new DaoException(e);
+        List<Flight> result = new ArrayList<>();
+        try (Session session = HibernateSessionManager.get()) {
+            session.beginTransaction();
+            List flights = session.createQuery(FIND_ALL_HIB).getResultList();
+            result.addAll(flights);
+            session.getTransaction().commit();
         }
+        return result;
     }
 
     @Override
@@ -91,10 +55,12 @@ public class FlightDao implements Dao<Long, Flight>{
 
     @Override
     public Optional<Flight> findById(Long flightId) {
-        try (var connection = ConnectionManager.get()){
-            return findById(flightId, connection);
-        } catch (SQLException e) {
-            throw new DaoException(e);
+        Flight flight = null;
+        try(var session = HibernateSessionManager.get()) {
+            session.beginTransaction();
+            flight = session.get(Flight.class,flightId);
+            session.getTransaction().commit();
         }
+        return Optional.ofNullable(flight);
     }
 }
